@@ -35,6 +35,12 @@ print(merged_data.isnull().sum())
 perc_missing_values = merged_data.isnull().sum()/merged_data.shape[0]
 print(perc_missing_values)
 
+# removing columns where null percentage is greater than 10
+columns_cleaned = merged_data.columns[perc_missing_values<.1]
+
+# changing the dataset so that it only contains required columns
+merged_data=merged_data[columns_cleaned].copy()
+
 # Filling in the missing data in columns by the previous day values
 merged_data=merged_data.ffill()
 
