@@ -6,11 +6,9 @@ dataset1 = pd.read_csv('D:\SNS\London 2000-01-01 to 2024-01-31.csv', index_col="
 dataset2 = pd.read_csv(r'D:\SNS\tfl-daily-cycle-hires.csv', index_col="Day", parse_dates=["Day"])
 
 # filter dataset1 from 2010.07.30 to 2024.01.31
-start_date = pd.to_datetime('2000-01-01')
-end_date = pd.to_datetime('2010-07-29')
-
+start_date = pd.to_datetime('2010-07-30')
 dataset1.index = pd.to_datetime(dataset1.index)
-dataset1_filtered = dataset1[(dataset1.index < start_date) | (dataset1.index > end_date)]
+dataset1_filtered = dataset1[(dataset1.index >= start_date)]
 
 # combining the two datasets
 merged_data = pd.merge(dataset1_filtered, dataset2, left_index=True, right_index=True, how='outer')
