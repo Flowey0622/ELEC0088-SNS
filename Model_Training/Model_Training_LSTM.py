@@ -8,11 +8,12 @@ from sklearn.preprocessing import StandardScaler
 
 # ##============= Data loading and processing =============##
 # loading dataset into the program
-dataset1 = pd.read_csv('London 2000-01-01 to 2024-01-31.csv', index_col="datetime")
-dataset2 = pd.read_csv(r'tfl-daily-cycle-hires.csv', index_col="Day", parse_dates=["Day"])
+dataset1 = pd.read_csv('../DataSets/London 2000-01-01 to 2024-01-31.csv', index_col="datetime")
+dataset2 = pd.read_csv(r'../DataSets/tfl-daily-cycle-hires.csv', index_col="Day", parse_dates=["Day"])
 
-# define the features we want to predict, focus on only max temperature now
+# define the features we want to predict
 target_features = ['tempmax', 'tempmin', 'windspeed', 'precip', 'Number of Bicycle Hires']
+features_unit = ['($C°$)', '($C°$)', '($m / s$)', '($mm$)', '']
 
 # filter dataset1 from 2010.07.30 to 2024.01.31 to fit with dataset2
 start_date = pd.to_datetime('2010-07-30')
@@ -36,6 +37,21 @@ merged_data['Number of Bicycle Hires'] = merged_data['Number of Bicycle Hires'].
 # Filling in the missing data in columns by the previous day values
 merged_data = merged_data.ffill()
 
+# Analyze the read weather data and draw temperature data
+plt.figure(figsize=(16, 12))
+for i, feature in enumerate(target_features):
+    value = merged_data.loc[:, feature]
+
+    plt.subplot(4, 2, i + 1)
+    plt.plot(range(len(value)), value)  # paint all data
+    plt.xlabel('Samples')
+    plt.ylabel(r'' + feature + features_unit[i])
+
+    plt.title('Data of ' + feature + ' in the dataset')
+
+plt.tight_layout()
+plt.show()
+
 # ##======== Prepare the data sets required for the model ========##
 # Normalise data
 scaler = StandardScaler()
@@ -53,7 +69,7 @@ train_size = int(len(scaled_data) * train_ratio)
 val_size = int(len(scaled_data) * val_ratio)
 
 lookback = 30   # use the data of last 30 days to predict that of next day
-N = 3           # forecast the weather on the Nth day
+N = 7           # forecast the weather on the Nth day
 
 referencing_mae = []
 test_mae = []
@@ -63,24 +79,24 @@ for forecast in range(N):
     # generate x_train and y_train
     x_train = []
     y_train = []
-    for i in range(lookback+forecast, train_size+1):
-        x_train.append(scaled_data[i-lookback-forecast:i-forecast])
+    for i in range(lookback + forecast, train_size + 1):
+        x_train.append(scaled_data[i - lookback - forecast:i - forecast])
         y_train.append(scaled_data.loc[i, target_features])
     x_train, y_train = np.array(x_train), np.array(y_train)
 
     # generate x_val and y_val
     x_val = []
     y_val = []
-    for i in range(train_size+forecast, train_size+val_size+1):
-        x_val.append(scaled_data[i-lookback-forecast:i-forecast])
+    for i in range(train_size + lookback + forecast, train_size + val_size + 1):
+        x_val.append(scaled_data[i - lookback - forecast:i - forecast])
         y_val.append(scaled_data.loc[i, target_features])
     x_val, y_val = np.array(x_val), np.array(y_val)
 
     # generate x_test and y_test
     x_test = []
     y_test = []
-    for i in range(train_size+val_size+forecast, len(scaled_data)):
-        x_test.append(scaled_data[i-lookback-forecast:i-forecast])
+    for i in range(train_size + val_size + lookback + forecast, len(scaled_data)):
+        x_test.append(scaled_data[i - lookback - forecast:i - forecast])
         y_test.append(scaled_data.loc[i, target_features])
     x_test, y_test = np.array(x_test), np.array(y_test)
 
@@ -118,6 +134,11 @@ for forecast in range(N):
                         batch_size=128,
                         validation_data=(x_val, y_val))
 
+    # save the model
+    filename_format = 'LSTM_Model_Day{}.h5'
+    filename = filename_format.format(forecast+1)
+    model.save('../Models_Trained/' + filename)
+
     # save the training history
     train_history.append(history)
 
@@ -127,9 +148,6 @@ for forecast in range(N):
     error = model.predict(x_test) - y_test
     test_mae.append(np.mean(np.abs(error), axis=0)*std)
 
-# paint the result
-# fig, axs = plt.subplots(4, 2, figsize=(16, 12), sharex=True)
-# axs = axs.flatten()
 plt.figure(figsize=(16, 12))
 
 for i, history in enumerate(train_history):
