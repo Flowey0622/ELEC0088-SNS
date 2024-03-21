@@ -18,4 +18,5 @@ This directory stores the trained models, which will be loaded on the server and
 
 # Project Flow Chart
 ![image](https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2){:height="50%"}
+ <img src="./xxx.png" width = "200" height = "180" alt="[图片名称](https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2)https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2" align=center />
 
