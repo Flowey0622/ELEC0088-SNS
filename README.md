@@ -12,9 +12,7 @@ This directory includes server and client programs, as well as the program respo
 
 ## DateSets
 - London 2000-01-01 to 2024-01-31.csv
-  introduction about the dataset
 - tfl-daily-cycle-hires.csv
-  introduction about the dataset
 
 ## Model_Training
 This includes programs for training two models, GRU and LSTM, as well as simplified versions in the form of Jupyter Notebook to facilitate understanding, testing, and improving the model.
