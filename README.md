@@ -2,7 +2,7 @@
 
 ## Backups
 
-This directory includes the methods and ideas tried during the code writing process. They are temporarily left here in case it may be useful for future improvements. This directory and its contents will be deleted when it is finally completed.
+This directory includes the methods and ideas tried during the code writing process. They are temporarily left here in case it may be useful for future improvements. This directory and its contents will be deleted when our work is finally completed.
 
 ## Chatbot_Oracle
 
