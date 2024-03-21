@@ -17,7 +17,5 @@ This includes programs for training two models, GRU and LSTM. Run the two progra
 This directory stores the trained models, which will be loaded on the server and applied to predict data.
 
 # Project Flow Chart
-![image](https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2){:height="50%"}
- <img src="[./xxx.png](https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2)https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2" width = "300" height = "200" align=center />
-
+![image](https://github.com/Flowey0622/Stronger/assets/160813460/056e188a-8e63-4ac2-84f5-86392a28aac2)
 
