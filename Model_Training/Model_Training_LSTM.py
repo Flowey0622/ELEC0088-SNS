@@ -38,11 +38,11 @@ merged_data['Number of Bicycle Hires'] = merged_data['Number of Bicycle Hires'].
 merged_data = merged_data.ffill()
 
 # Analyze the read weather data and draw temperature data
-plt.figure(figsize=(16, 12))
+plt.figure(figsize=(16, 9))
 for i, feature in enumerate(target_features):
     value = merged_data.loc[:, feature]
 
-    plt.subplot(4, 2, i + 1)
+    plt.subplot(3, 2, i + 1)
     plt.plot(range(len(value)), value)  # paint all data
     plt.xlabel('Samples')
     plt.ylabel(r'' + feature + features_unit[i])
@@ -50,6 +50,7 @@ for i, feature in enumerate(target_features):
     plt.title('Data of ' + feature + ' in the dataset')
 
 plt.tight_layout()
+plt.subplots_adjust(hspace=0.4)
 plt.show()
 
 # ##======== Prepare the data sets required for the model ========##
