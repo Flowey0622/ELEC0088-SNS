@@ -31,11 +31,21 @@ dataset1_filtered.drop(columns=['name', 'severerisk', 'windgust',
 # combining the two datasets
 merged_data = pd.merge(dataset1_filtered, dataset2, left_index=True, right_index=True, how='outer')
 
+# Checking number of missing data in every column
+print(merged_data.isnull().sum())
+
+# checking percentage of missing data in a column
+perc_missing_values = merged_data.isnull().sum()/merged_data.shape[0]
+print(perc_missing_values)
+
 # change the values of bike hires to float
 merged_data['Number of Bicycle Hires'] = merged_data['Number of Bicycle Hires'].apply(lambda x: float(x.replace(',', '')))
 
 # Filling in the missing data in columns by the previous day values
 merged_data = merged_data.ffill()
+
+# Checking how many entries for each year to identify if there is any day weather record is missing
+print(merged_data.index.year.value_counts().sort_index())
 
 # Analyze the read weather data and draw temperature data
 plt.figure(figsize=(16, 9))
