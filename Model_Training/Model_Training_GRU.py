@@ -20,6 +20,13 @@ start_date = pd.to_datetime('2010-07-30')
 dataset1.index = pd.to_datetime(dataset1.index)
 dataset1_filtered = dataset1[(dataset1.index >= start_date)]
 
+# Checking number of missing data in every column
+print(dataset1.isnull().sum())
+
+# checking percentage of missing data in a column
+perc_missing_values = dataset1.isnull().sum()/dataset1.shape[0]
+print(perc_missing_values)
+
 # delete useless columns and columns with too many NaN values
 dataset1_filtered.drop(columns=['name', 'severerisk', 'windgust',
                                 'preciptype', 'precipprob', 'solarradiation',
@@ -30,13 +37,6 @@ dataset1_filtered.drop(columns=['name', 'severerisk', 'windgust',
 
 # combining the two datasets
 merged_data = pd.merge(dataset1_filtered, dataset2, left_index=True, right_index=True, how='outer')
-
-# Checking number of missing data in every column
-print(merged_data.isnull().sum())
-
-# checking percentage of missing data in a column
-perc_missing_values = merged_data.isnull().sum()/merged_data.shape[0]
-print(perc_missing_values)
 
 # change the values of bike hires to float
 merged_data['Number of Bicycle Hires'] = merged_data['Number of Bicycle Hires'].apply(lambda x: float(x.replace(',', '')))
