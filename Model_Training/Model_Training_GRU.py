@@ -42,7 +42,7 @@ plt.figure(figsize=(16, 9))
 for i, feature in enumerate(target_features):
     value = merged_data.loc[:, feature]
 
-    plt.subplot(4, 2, i + 1)
+    plt.subplot(3, 2, i + 1)
     plt.plot(range(len(value)), value)  # paint all data
     plt.xlabel('Samples')
     plt.ylabel(r'' + feature + features_unit[i])
