@@ -20,6 +20,13 @@ start_date = pd.to_datetime('2010-07-30')
 dataset1.index = pd.to_datetime(dataset1.index)
 dataset1_filtered = dataset1[(dataset1.index >= start_date)]
 
+# Checking number of missing data in every column
+print(dataset1.isnull().sum())
+
+# checking percentage of missing data in a column
+perc_missing_values = dataset1.isnull().sum()/dataset1.shape[0]
+print(perc_missing_values)
+
 # delete useless columns and columns with too many NaN values
 dataset1_filtered.drop(columns=['name', 'severerisk', 'windgust',
                                 'preciptype', 'precipprob', 'solarradiation',
@@ -36,6 +43,9 @@ merged_data['Number of Bicycle Hires'] = merged_data['Number of Bicycle Hires'].
 
 # Filling in the missing data in columns by the previous day values
 merged_data = merged_data.ffill()
+
+# Checking how many entries for each year to identify if there is any day weather record is missing
+print(merged_data.index.year.value_counts().sort_index())
 
 # Analyze the read weather data and draw temperature data
 plt.figure(figsize=(16, 9))
