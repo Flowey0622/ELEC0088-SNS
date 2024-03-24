@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 from keras.models import load_model
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
+
 
 class MyModel:
 
@@ -10,10 +11,19 @@ class MyModel:
     __target_features = ['tempmax', 'tempmin', 'windspeed', 'precip', 'Number of Bicycle Hires']
 
     def __init__(self, today):
+
+        # load the model
+        self.models = pd.DataFrame(index=range(self.__N), columns=self.__target_features)
+        for feature in self.__target_features:
+            for date in range(self.__N):
+                filename = self.__MODEL_TYPE + f'_Model_Day{date+1}_{feature}.h5'
+                self.models.at[date, feature] = load_model('../Models_Trained/' + filename)
+
+        # load the dataset
         # define a date in test_set as "today"
         self.TODAY = today
-        # ##============= Data loading and processing =============##
-        # loading dataset into the program
+        self.data_x = []
+
         dataset1 = pd.read_csv('../DataSets/London 2000-01-01 to 2024-01-31.csv', index_col="datetime")
         dataset2 = pd.read_csv(r'../DataSets/tfl-daily-cycle-hires.csv', index_col="Day", parse_dates=["Day"])
 
@@ -40,45 +50,59 @@ class MyModel:
         # Filling in the missing data in columns by the previous day values
         merged_data = merged_data.ffill()
 
-        # ##======== Prepare the dataset(x_test) required for the model ========##
         # Normalise data
-        scaler = StandardScaler()
-        scaled_data = scaler.fit_transform(merged_data)
-        scaled_data = pd.DataFrame(scaled_data, columns=merged_data.columns)
-        self.__std = merged_data.loc[:, self.__target_features].std(axis=0)
+        scaled_data = pd.DataFrame(index=range(merged_data.shape[0]), columns=merged_data.columns)
+        self.__scalers = pd.Series(index=merged_data.columns)
+        for feature in merged_data.columns:
+            scaler = MinMaxScaler()
+            scaled_data[feature] = scaler.fit_transform(merged_data[feature].to_frame())
+            self.__scalers[feature] = scaler
 
-        # Specify the ratio of training set, validation set, and test set
-        train_ratio = 0.7
-        val_ratio = 0.15
+        # scaler = MinMaxScaler()
+        # scaled_data = scaler.fit_transform(merged_data)
+        # scaled_data = pd.DataFrame(scaled_data, columns=merged_data.columns)
+        self.__deltas = merged_data.max() - merged_data.min()
 
-        # Calculate the size of the training, validation, and testing sets
-        train_size = int(len(scaled_data) * train_ratio)
-        val_size = int(len(scaled_data) * val_ratio)
+        # Calculate correlation matrix
+        correlation_matrix = scaled_data.corr()
 
-        lookback = 30  # use the data of last 30 days to predict that of next day
-        N = 7  # forecast the weather on the Nth day
-        forecast = N - 1
+        for feature in self.__target_features:
 
-        # find the index of the set 'today'
-        test_start_index = train_size + val_size + lookback
-        test_start_date = pd.to_datetime('2022-2-19')
-        delta = (self.TODAY - test_start_date).days
+            correlation_with_target = correlation_matrix[feature].abs().sort_values(ascending=False)
+            # Print the correlation results
+            print("Correlation with", feature)
+            print(correlation_with_target)
 
-        self.x_test = np.array(scaled_data[test_start_index + delta - lookback: test_start_index + delta])
-        self.x_test = np.expand_dims(self.x_test, axis=0)
+            # Only retain features have high correlation with the target feature
+            features_used = list(correlation_with_target[correlation_with_target > 0.3].index)
+            filtered_data = scaled_data.loc[:, features_used]
 
-        # load the model
-        self.models = []
-        for i in range(1, N+1):
-            filename_format = self.__MODEL_TYPE + '_Model_Day{}.h5'
-            filename = filename_format.format(i)
-            self.models.append(load_model('../Models_Trained/' + filename))
+            # Specify the ratio of training set, validation set, and test set
+            train_ratio = 0.7
+            val_ratio = 0.15
+
+            # Calculate the size of the training, validation, and testing sets
+            train_size = int(len(scaled_data) * train_ratio)
+            val_size = int(len(scaled_data) * val_ratio)
+
+            lookback = 30  # use the data of last 30 days to predict that of next day
+            N = 7  # forecast the weather on the Nth day
+            forecast = N - 1
+
+            # find the index of the set 'today'
+            test_start_index = train_size + val_size + lookback
+            test_start_date = pd.to_datetime('2022-2-19')
+            delta = (self.TODAY - test_start_date).days
+
+            data = np.array(filtered_data[test_start_index + delta - lookback: test_start_index + delta])
+            self.data_x.append(np.expand_dims(data, axis=0))
 
     def predict(self, date, feature):
 
-        pred = (self.models[date - 1].predict([self.x_test])).reshape(len(self.__target_features))
-        pred = pred * self.__std
         i = self.__target_features.index(feature)
-        value = pred.iloc[i]
+        pred = (self.models.at[date-1, feature].predict(self.data_x[i]))
+        pred_value = self.__scalers[feature].inverse_transform(pred)
+        # i = self.__target_features.index(feature)
+        # value = pred.iloc[i]
 
-        return value
+        return pred_value

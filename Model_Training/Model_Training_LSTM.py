@@ -4,7 +4,7 @@ from keras import layers
 from keras.models import Sequential
 from keras.optimizers import RMSprop
 from matplotlib import pyplot as plt
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # ##============= Data loading and processing =============##
 # loading dataset into the program
@@ -63,17 +63,17 @@ plt.tight_layout()
 plt.subplots_adjust(hspace=0.4)
 plt.show()
 
-# ##======== Prepare the data sets required for the model ========##
+# ##======== Prepare the datasets required for the model ========##
 # Normalise data
-scaler = StandardScaler()
+scaler = MinMaxScaler()
 scaled_data = scaler.fit_transform(merged_data)
 scaled_data = pd.DataFrame(scaled_data, columns=merged_data.columns)
-std = merged_data.loc[:, target_features].std(axis=0)
+deltas = merged_data.max() - merged_data.min()
 
 # Specify the ratio of training set, validation set, and test set
 train_ratio = 0.7
 val_ratio = 0.15
-test_ratio = 0.15
+# test_ratio = 0.15
 
 # Calculate the size of the training, validation, and testing sets
 train_size = int(len(scaled_data) * train_ratio)
@@ -82,103 +82,117 @@ val_size = int(len(scaled_data) * val_ratio)
 lookback = 30   # use the data of last 30 days to predict that of next day
 N = 7           # forecast the weather on the Nth day
 
-referencing_mae = []
-test_mae = []
-train_history = []
+referencing_mae = pd.DataFrame(index=range(N), columns=target_features)
+test_mae = pd.DataFrame(index=range(N), columns=target_features)
+train_history = pd.DataFrame(index=range(N), columns=target_features)
 
-for forecast in range(N):
-    # generate x_train and y_train
-    x_train = []
-    y_train = []
-    for i in range(lookback + forecast, train_size + 1):
-        x_train.append(scaled_data[i - lookback - forecast:i - forecast])
-        y_train.append(scaled_data.loc[i, target_features])
-    x_train, y_train = np.array(x_train), np.array(y_train)
+# Calculate correlation matrix
+correlation_matrix = scaled_data.corr()
 
-    # generate x_val and y_val
-    x_val = []
-    y_val = []
-    for i in range(train_size + lookback + forecast, train_size + val_size + 1):
-        x_val.append(scaled_data[i - lookback - forecast:i - forecast])
-        y_val.append(scaled_data.loc[i, target_features])
-    x_val, y_val = np.array(x_val), np.array(y_val)
+for feature in target_features:
+    # Extract correlations with the target variable
+    correlation_with_target = correlation_matrix[feature].abs().sort_values(ascending=False)
+    # Print the correlation results
+    print("Correlation with", feature)
+    print(correlation_with_target)
 
-    # generate x_test and y_test
-    x_test = []
-    y_test = []
-    for i in range(train_size + val_size + lookback + forecast, len(scaled_data)):
-        x_test.append(scaled_data[i - lookback - forecast:i - forecast])
-        y_test.append(scaled_data.loc[i, target_features])
-    x_test, y_test = np.array(x_test), np.array(y_test)
+    # Only retain features have high correlation with the target feature
+    features_used = list(correlation_with_target[correlation_with_target > 0.3].index)
+    filtered_data = scaled_data.loc[:, features_used]
 
-    # A common sense based, non machine learning method is
-    # used to calculate the MAE (Mean Absolute Error) of a
-    # common sense based method that always predicts that
-    # the next day's data is equal to the previous day's data.
-    target_feature_index = [merged_data.columns.get_loc(feature) for feature in target_features]
-    y_pred = np.empty(y_test.shape)
-    for i in range(x_test.shape[0]):
-        y_pred[i] = x_test[i, -1, target_feature_index]
-    error = y_pred - y_test
-    referencing_mae.append(np.mean(np.abs(error), axis=0)*std)
+    for date in range(N):
+        print(f'##======The model of {feature} on Day{date+1} is now being trained...======##')
 
-    # ##=========== build and train the model ===========##
-    # Train and evaluate a stacked LSTM model using dropout regularization
-    model = Sequential()
-    model.add(layers.LSTM(32,
-                          dropout=0.1,
-                          recurrent_dropout=0.5,
-                          return_sequences=True,
-                          input_shape=(None, scaled_data.shape[-1])))
-    model.add(layers.LSTM(16,
-                          activation='relu',
-                          dropout=0.1,
-                          recurrent_dropout=0.5))
-    model.add(layers.Dense(len(target_features)))
-    model.summary()
+        # generate x_train and y_train
+        x_train = []
+        y_train = []
+        for i in range(lookback + date, train_size + 1):
+            x_train.append(filtered_data[i - lookback - date:i - date])
+            y_train.append(filtered_data.loc[i, feature])
+        x_train, y_train = np.array(x_train), np.array(y_train)
 
-    # compile and train the model
-    model.compile(optimizer=RMSprop(learning_rate=0.001),
-                  loss='mae')
-    history = model.fit(x_train, y_train,
-                        epochs=25,
-                        batch_size=128,
-                        validation_data=(x_val, y_val))
+        # generate x_val and y_val
+        x_val = []
+        y_val = []
+        for i in range(train_size + lookback + date, train_size + val_size + 1):
+            x_val.append(filtered_data[i - lookback - date:i - date])
+            y_val.append(filtered_data.loc[i, feature])
+        x_val, y_val = np.array(x_val), np.array(y_val)
 
-    # save the model
-    filename_format = 'LSTM_Model_Day{}.h5'
-    filename = filename_format.format(forecast+1)
-    model.save('../Models_Trained/' + filename)
+        # generate x_test and y_test
+        x_test = []
+        y_test = []
+        for i in range(train_size + val_size + lookback + date, len(scaled_data)):
+            x_test.append(filtered_data[i - lookback - date:i - date])
+            y_test.append(filtered_data.loc[i, feature])
+        x_test, y_test = np.array(x_test), np.array(y_test)
 
-    # save the training history
-    train_history.append(history)
+        # A common sense based, non machine learning method  is
+        # used to calculate the MAE (Mean Absolute Error) of a
+        # common sense based method that always predicts that
+        # the next day's data is equal to the previous day's data.
+        y_pred = x_test[:, -1, 0]
+        error = y_pred - y_test
+        mae = np.mean(np.abs(error), axis=0)
+        referencing_mae.at[date, feature] = np.abs(mae*deltas[feature])
 
-    # ##================ test the model ================##
-    # denormalization the error, which shows the average error
-    # measured in Celsius degree.
-    error = model.predict(x_test) - y_test
-    test_mae.append(np.mean(np.abs(error), axis=0)*std)
+        # ##=========== build and train the model ===========##
+        # Train and evaluate a stacked LSTM model using dropout regularization
+        model = Sequential()
+        model.add(layers.LSTM(32,
+                             dropout=0.1,
+                             recurrent_dropout=0.5,
+                             return_sequences=True,
+                             input_shape=(None, filtered_data.shape[-1])))
+        model.add(layers.LSTM(16,
+                             activation='relu',
+                             dropout=0.1,
+                             recurrent_dropout=0.5))
+        model.add(layers.Dense(1))
+        model.summary()
 
-plt.figure(figsize=(16, 12))
+        # compile and train the model
+        model.compile(optimizer=RMSprop(learning_rate=0.001),
+                      loss='mae')
+        history = model.fit(x_train, y_train,
+                            epochs=25,
+                            batch_size=128,
+                            validation_data=(x_val, y_val))
 
-for i, history in enumerate(train_history):
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
-    epochs = range(len(loss))
+        # save the model
+        filename = f'GRU_Model_Day{date+1}_{feature}.h5'
+        model.save('../Models_Trained/' + filename)
 
-    plt.subplot(4, 2, i+1)
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
-    plt.title(f'Training and validation loss on Day {i+1}')
-    plt.legend()
+        # save the training history
+        train_history.at[date, feature] = history
+
+        # ##================ test the model ================##
+        score = model.evaluate(x_test, y_test, verbose=0)
+        test_mae.at[date, feature] = score*deltas[feature]
+
+plt.figure(figsize=(20, 15))
+
+fig_count = 0
+for feature in target_features:
+    for date in range(N):
+        fig_count = fig_count+1
+        loss = train_history.loc[date,feature].history['loss']
+        val_loss = train_history.loc[date,feature].history['val_loss']
+        epochs = range(len(loss))
+
+        plt.subplot(7, 5, fig_count)
+        plt.plot(epochs, loss, 'bo', label='Training loss')
+        plt.plot(epochs, val_loss, 'b', label='Validation loss')
+        plt.title(f'{feature} on Day{date+1}')
+        plt.legend()
 
 plt.tight_layout()
 plt.show()
 
-for i in range(N):
-    mae = {'Reference Error': referencing_mae[i], 'Test Error': test_mae[i]}
-    mae = pd.DataFrame(mae)
-    print(f'Reference Error and Test Error on Day {i+1} :')
-    print(mae)
+print('Reference Error:')
+print(referencing_mae)
+print('Test Error:')
+print(test_mae)
+
 
 
