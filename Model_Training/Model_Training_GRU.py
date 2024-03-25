@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from tensorflow.keras import layers
+from keras import layers
 from keras.models import Sequential
 from keras.optimizers import RMSprop
 from matplotlib import pyplot as plt
