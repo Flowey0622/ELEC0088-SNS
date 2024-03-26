@@ -181,8 +181,10 @@ for feature in target_features:
         epochs = range(len(loss))
 
         plt.subplot(7, 5, fig_count)
-        plt.plot(epochs, loss, 'bo', label='Training loss')
-        plt.plot(epochs, val_loss, 'b', label='Validation loss')
+        plt.plot(epochs, loss, color='red', label='Training loss')
+        plt.plot(epochs, val_loss, color='blue', label='Validation loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
         plt.title(f'{feature} on Day{date+1}')
         plt.legend()
 
