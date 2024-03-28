@@ -1,0 +1,11 @@
+  - name: 'gcr.io/cloud-builders/git'
+    args: ['clone', 
+'https://github.com/Flowey0622/ELEC0088-SNS-assignment', '.']
+
+  - name: 'python:3.7'
+    entrypoint: 'pip'
+    args: ['install', '-r', 'requirements.txt']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['app', 'deploy']
+
