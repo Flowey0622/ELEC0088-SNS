@@ -160,7 +160,7 @@ for feature in target_features:
                             validation_data=(x_val, y_val))
 
         # save the model
-        filename = f'GRU_Model_Day{date+1}_{feature}.h5'
+        filename = f'LSTM_Model_Day{date+1}_{feature}.h5'
         model.save('../Models_Trained/' + filename)
 
         # save the training history
