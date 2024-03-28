@@ -1,0 +1,10 @@
+runtime: python39
+entrypoint: gunicorn -b :$PORT main:app
+
+handlers:
+- url: /.*
+  script: auto
+
+env_variables:
+  SECRET_KEY: "123456"
+
