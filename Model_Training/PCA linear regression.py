@@ -210,7 +210,6 @@ print(f"Average R² score: {scores.mean()}")
     #return plt
 
 
-# 绘制学习曲线
 #plot_learning_curve(model, principal_data_train, y_train, ylim=(0.0, 1.01), cv=5, n_jobs=4)
 #plot_learning_curve(model, principal_data_train, y_train.ravel(), ylim=(0.0, 1.01), cv=5, n_jobs=1)
 
