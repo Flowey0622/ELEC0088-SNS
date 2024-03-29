@@ -17,6 +17,10 @@ This includes programs for training two models, GRU and LSTM. Run the two progra
 
 This directory stores the trained models, which will be loaded on the server and applied to predict data.
 
+## requirements
+
+All the modules needed in this project
+
 # Project Flow Chart
 
 <img src="https://github.com/Flowey0622/Stronger/assets/160813460/d8ba7584-276f-49bb-a4d2-8c0efcbf13b8" width="550px">
