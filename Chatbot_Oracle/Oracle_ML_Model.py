@@ -69,9 +69,6 @@ class MyModel:
         for feature in self.__target_features:
 
             correlation_with_target = correlation_matrix[feature].abs().sort_values(ascending=False)
-            # Print the correlation results
-            print("Correlation with", feature)
-            print(correlation_with_target)
 
             # Only retain features have high correlation with the target feature
             features_used = list(correlation_with_target[correlation_with_target > 0.3].index)
@@ -102,7 +99,5 @@ class MyModel:
         i = self.__target_features.index(feature)
         pred = (self.models.at[date-1, feature].predict(self.data_x[i]))
         pred_value = self.__scalers[feature].inverse_transform(pred)
-        # i = self.__target_features.index(feature)
-        # value = pred.iloc[i]
 
-        return pred_value
+        return pred_value[0, 0]
