@@ -17,6 +17,10 @@ This includes programs for training two models, GRU and LSTM. Run the two progra
 
 This directory stores the trained models, which will be loaded on the server and applied to predict data.
 
+## ELEC0088 SNS Assignment Final Report.pdf
+
+The report for this project
+
 ## requirements
 
 All the modules needed in this project
