@@ -29,3 +29,13 @@ All the modules needed in this project
 # Project Flow Chart
 
 <img src="https://github.com/Flowey0622/Stronger/assets/160813460/d8ba7584-276f-49bb-a4d2-8c0efcbf13b8" width="550px">
+
+# Server_with_ML
+
+The server script establishes a multi-threaded TCP server designed to interact with clients in real-time, providing personalized weather and bike hire predictions. It utilizes Python's socket, threading, pandas, re, and numpy libraries for networking, concurrent execution, data manipulation, regular expression matching, and numerical operations, respectively.
+
+# Client
+
+The client script connects to the server via TCP, facilitating a two-way communication channel for users to interact with the Oracle prediction bot. It sends user inputs to the server and displays responses, creating an interactive dialogue experience.
+
+
