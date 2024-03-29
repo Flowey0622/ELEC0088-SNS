@@ -1,6 +1,8 @@
 # Structure of this project
 
 ## Chatbot_Oracle
+This directory includes server and client programs, as well as the program responsible for prediction, Oracle_ML_Model.py.
+'app.py' includes that connection between dialogflow and server. This file has conversation and prediction. Also there is a function for dialoflow webhook in Google Cloud. There are two file that call 'app.yaml' and 'cloudbuil.yaml', they include running method for app.py and Cloud Build respectively.
 
 ### server_with_ML.ipynb
 
@@ -9,9 +11,6 @@ The server script establishes a multi-threaded TCP server designed to interact w
 ### client_1.ipynb & client_2.ipynb
 
 The client script connects to the server via TCP, facilitating a two-way communication channel for users to interact with the Oracle prediction bot. It sends user inputs to the server and displays responses, creating an interactive dialogue experience.
-
-This directory includes server and client programs, as well as the program responsible for prediction, Oracle_ML_Model.py.
-'app.py' includes that connection between dialogflow and server. This file has conversation and prediction. Also there is a function for dialoflow webhook in Google Cloud. There are two file that call 'app.yaml' and 'cloudbuil.yaml', they include running method for app.py and Cloud Build respectively.
 
 ## DateSets
 
