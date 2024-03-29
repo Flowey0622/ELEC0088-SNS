@@ -2,11 +2,11 @@
 
 ## Chatbot_Oracle
 
-# server_with_ML.ipynb
+### server_with_ML.ipynb
 
 The server script establishes a multi-threaded TCP server designed to interact with clients in real-time, providing personalized weather and bike hire predictions. It utilizes Python's socket, threading, pandas, re, and numpy libraries for networking, concurrent execution, data manipulation, regular expression matching, and numerical operations, respectively.
 
-# client_1.ipynb & client_2.ipynb
+### client_1.ipynb & client_2.ipynb
 
 The client script connects to the server via TCP, facilitating a two-way communication channel for users to interact with the Oracle prediction bot. It sends user inputs to the server and displays responses, creating an interactive dialogue experience.
 
